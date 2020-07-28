@@ -1,10 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GamePlayScreen : Singleton<GamePlayScreen>
 {
+    public static event Action OnThrow;
     [SerializeField] private Button throwButton;
     protected override void Setup()
     {
@@ -13,6 +15,6 @@ public class GamePlayScreen : Singleton<GamePlayScreen>
 
     public void ThrowButton()
     {
-        
+        OnThrow?.Invoke();
     }
 }
