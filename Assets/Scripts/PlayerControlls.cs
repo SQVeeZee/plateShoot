@@ -4,17 +4,15 @@ public class PlayerControlls : MonoBehaviour
 {
     [SerializeField] private float sensitivityX = 5F;
     [SerializeField] private float sensitivityY = 5F;
-    [SerializeField] private float minimumX = -90F;
-    [SerializeField] private float maximumX = 90F;
-    [SerializeField] private float minimumY = -40F;
-    [SerializeField] private float maximumY = 40F;
+    
+    [SerializeField] private float minimumY = -60F;
+    [SerializeField] private float maximumY = 60F;
     
     private float rotationX = 0F;
     private float rotationY = 0F;
     
     Quaternion originalRotation;
-
-    private bool isRotating;
+    public bool IsRotating { get; private set; }
 
     private void OnEnable()
     {
@@ -38,7 +36,7 @@ public class PlayerControlls : MonoBehaviour
     
     private void InputCheck(bool rotating)
     {
-        this.isRotating = rotating;
+        this.IsRotating = rotating;
 
         if (rotating)
         {
@@ -52,10 +50,13 @@ public class PlayerControlls : MonoBehaviour
 
     private void GetAxis()
     {
-        if (isRotating)
+        if (IsRotating)
         {
             rotationX += Input.GetAxis("Mouse X") * sensitivityX;
             rotationY += Input.GetAxis("Mouse Y") * sensitivityY;
+            
+            rotationY = Mathf.Clamp(rotationY, minimumY, maximumY);
+            
             Quaternion xQuaternion = Quaternion.AngleAxis(rotationX, Vector3.up);
             Quaternion yQuaternion = Quaternion.AngleAxis(rotationY, -Vector3.right);
             transform.localRotation = originalRotation * xQuaternion * yQuaternion;

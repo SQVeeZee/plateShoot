@@ -1,31 +1,39 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 public class AimChecker : MonoBehaviour
 {
+    public static event Action OnDestroyPlate;
+    
     [SerializeField] private Texture crosshair;
     [SerializeField] private float sizeMultiplyer;
+    
     private float crosshairDiameter;
     private float crosshairPositionHorizontal;
     private float crosshairPositionVertical;
     private Vector2 screenCenter;
     private float proximity;
 
-    public GameObject target;
-    public Collider col;
+    private GameObject target;
+    private Collider col;
     private Camera cam;
 
     private bool isDetecting;
+    private bool isAimed;
 
     private void OnEnable()
     {
         InputHandler.OnInput += InputCheck;
+        PlateGun.OnSpawnedPlate += SetTheTarget;
     }
 
     private void OnDisable()
     {
         InputHandler.OnInput -= InputCheck;
+        PlateGun.OnSpawnedPlate += SetTheTarget;
     }
-    
+
     void Start()
     {
         crosshairDiameter = (Screen.height * sizeMultiplyer);
@@ -34,7 +42,6 @@ public class AimChecker : MonoBehaviour
         screenCenter.x = (Screen.width / 2);
         screenCenter.y = (Screen.height / 2);
 
-        col = target.GetComponent<Collider>();
         cam = Camera.main.GetComponent<Camera>();
     }
 
@@ -45,10 +52,11 @@ public class AimChecker : MonoBehaviour
     
     private void InputCheck(bool detecting)
     {
-        this.isDetecting = detecting;
+        isDetecting = detecting;
 
         if (detecting)
         {
+            isDetecting = true;
             print("Detecting");
         }
         else
@@ -59,7 +67,7 @@ public class AimChecker : MonoBehaviour
     
     private void CrosshairDetect()
     {
-        if (isDetecting)
+        if (isDetecting && target!=null)
         {
             Vector3 targetScreenPos = cam.WorldToScreenPoint(target.transform.position);
             Vector2 targetScreenPoint = new Vector2(targetScreenPos.x, targetScreenPos.y);
@@ -68,9 +76,45 @@ public class AimChecker : MonoBehaviour
 
             if (proximity < (crosshairDiameter / 2))
             {
+                if (!isAimed)
+                {
+                    GamePlayScreen.Instance.SetBarState(true);
+                    isAimed = true;
+                    StartCoroutine(AimedProgress());
+                }
                 print("Aimed");
             }
+            
+            else
+            {
+                if (isAimed)
+                {
+                    GamePlayScreen.Instance.SetBarState(false);
+                    isAimed = false;
+                    StopAllCoroutines();
+                }
+            }
         }
+    }
+
+    private IEnumerator AimedProgress()
+    {
+        float t = 0;
+
+        while (t<=1)
+        {
+            t+=0.05f;
+            GamePlayScreen.Instance.SetProgressBar(t);
+            yield return new WaitForSeconds(0.05f);
+        }
+        OnDestroyPlate?.Invoke();
+        GamePlayScreen.Instance.SetBarState(false);
+    }
+    
+    private void SetTheTarget(GameObject plateObj)
+    {
+        target = plateObj;
+        col = target.GetComponent<Collider>();
     }
     
     private void OnGUI()
