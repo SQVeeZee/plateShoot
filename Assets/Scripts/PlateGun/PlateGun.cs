@@ -22,6 +22,7 @@ public class PlateGun : MonoBehaviour
     {
         var gunId = Random.Range(0,plateGuns.Length);
         GameObject plateObj = Instantiate(plate, plateGuns[gunId].transform.GetChild(0));
+
         OnSpawnedPlate?.Invoke(plateObj);
     }
 }

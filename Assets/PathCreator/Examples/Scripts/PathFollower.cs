@@ -14,6 +14,7 @@ namespace PathCreation.Examples
 
         void Awake()
         {
+            print(gameObject.transform.localPosition);
             pathCreator = transform.parent.GetComponent<PathCreator>();
         }
 

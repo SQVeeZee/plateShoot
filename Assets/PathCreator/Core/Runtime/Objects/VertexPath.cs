@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using PathCreation.Utility;
 using UnityEngine;
 
@@ -15,6 +17,8 @@ namespace PathCreation {
     public class VertexPath {
         #region Fields
 
+        public static event Action OnFinished;
+        
         public readonly PathSpace space;
         public readonly bool isClosedLoop;
         public readonly Vector3[] localPoints;
@@ -264,7 +268,13 @@ namespace PathCreation {
                     t = Mathf.PingPong (t, 1);
                     break;
                 case EndOfPathInstruction.Stop:
-                    t = Mathf.Clamp01 (t);
+                {
+                    t = Mathf.Clamp01(t);
+                    if (t >= 1)
+                    {
+                        OnFinished?.Invoke();
+                    }
+                }
                     break;
             }
 
@@ -285,7 +295,8 @@ namespace PathCreation {
                 }
                 i = (nextIndex + prevIndex) / 2;
 
-                if (nextIndex - prevIndex <= 1) {
+                if (nextIndex - prevIndex <= 1)
+                {
                     break;
                 }
             }
